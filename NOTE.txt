@@ -1,0 +1,12 @@
+========= Pier 1 ============= 
+Aggiungo questo file di note così che se dobbiamo scrivere robe non usiamo solo il commit.
+
+Ho ricreato il file 'requirements.txt' (era sbagliato, secondo me l'avevi sovrascritto perchè c'erano nella lista dei pacchetti che io non avevo mai usato).
+Prova a ricrearti l'ambiente virtuale e installare i pacchetti con:
+	virtualenv --python=python3 <nome_ambiente>
+	source <nome_ambiente>/bin/active  
+	which python3	# solo per controllare che sia corretto Python
+	which pip	# ... e pip
+	pip install -r <path>/<to>/requirements.txt
+
+Proviamo a usare questo file NOTE e vediamo se funziona ahaha
