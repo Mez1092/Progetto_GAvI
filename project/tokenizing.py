@@ -20,7 +20,7 @@ emoticon_string = r"""
       [<>]?
       [:;=8]                     # eyes
       [\-o\*\']?                 # optional nose
-      [\)\]\(\[dDpP/\:\}\{@\|\\] # mouth      
+      [\)\]\(\[dDpP/\:\}\{@\|\\] # mouth
       |
       [\)\]\(\[dDpP/\:\}\{@\|\\] # mouth
       [\-o\*\']?                 # optional nose
@@ -55,7 +55,7 @@ regex_strings = (
     |
     (?:[\w_]+)                     # Words without apostrophes or dashes.
     |
-    (?:\.(?:\s*\.){1,})            # Ellipsis dots. 
+    (?:\.(?:\s*\.){1,})            # Ellipsis dots.
     |
     (?:\S)                         # Everything else that isn't whitespace.
     """
@@ -66,7 +66,6 @@ word_re = re.compile(r"""(%s)""" % "|".join(regex_strings), re.VERBOSE | re.I | 
 def html2unicode(text):
 	"""	Convert HTML entities in unicode char.
 	"""
-
 	html_entity_digit_re = "&#\d+;"
 	html_entity_alpha_re = re.compile(r"&\w+;")
 	amp = "&amp;"
@@ -107,12 +106,15 @@ def find_emojis(text):
 	return text, emojis
 
 def split_hashtags(hashtag):
-	matches = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', hashtag)
-	return [m.group(0) for m in matches]
+	""" Split camel case hashtag
+		Return splitted hashtag
+	"""
+	matches = re.findall('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', hashtag)
+	return matches
 
 if __name__ == '__main__':
 	tweets = ET.parse(args.input_file).getroot()
-	
+
 	tweets_text = []
 	print("Tokenizing tweets...")
 	for tweet in tqdm(tweets):
@@ -130,33 +132,34 @@ if __name__ == '__main__':
 		text_token['ID'] = tweet_id
 		text_token['ORIGINAL_TEXT'] = tweet_text
 		text_token['LANG'] = tweet_lang
-		
+
 		tweet_text = html2unicode(tweet_text)
-		
+
 		tweet_text, emojis = find_emojis(tweet_text)
 
 		tokens = word_re.findall(tweet_text)
 		for token in tokens:
-			if token.startswith('#'):					# is hashtag
+			if token.startswith('#'):									# is hashtag
 				hashtags.append(token.replace('#', '').lower())
 				hasthtag_text = split_hashtags(token.replace('#', ''))	# split camel case
 				for hashtag in hasthtag_text:
 					plain_text.append(hashtag.lower())
-			elif token.startswith('@'):					# is screen name
+			elif token.startswith('@'):									# is screen name
 				pass
-			elif token.startswith('http'): 				# is a link
+			elif token.startswith('http'): 								# is a link
 				pass
-			elif token.startswith('RT'):				# is re-tweet
+			elif token.startswith('RT'):								# is re-tweet
 				pass
-			elif (token in HAPPY) or (token in SAD):	# is emoticon
+			elif (token in HAPPY) or (token in SAD):					# is emoticon
 				emoticons.append(token)
 			else:
-				plain_text.append(token.lower())				# is plain text
+				text = re.sub('[\_\-]', ' ', token).lower()				# adjust plain text
+				plain_text.append(text)									# is plain text
 
 		text_token['HASHTAGS'] = ' '.join(hashtags)
 		text_token['EMOTICONS'] = ' '.join(emoticons)
 		text_token['EMOJIS'] = ' '.join(emojis)
-		text_token['PLAIN_TEXT'] = ' '.join(plain_text) 
+		text_token['PLAIN_TEXT'] = ' '.join(plain_text)
 		tweets_text.append(text_token)
 
 	print("Write token in xml file...")
