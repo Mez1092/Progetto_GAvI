@@ -1,4 +1,4 @@
-========= Pier 1 ============= 
+========= Pier - virtualenv ============= 
 Aggiungo questo file di note così che se dobbiamo scrivere robe non usiamo solo il commit.
 
 - Ho ricreato il file 'requirements.txt' (era sbagliato, secondo me l'avevi sovrascritto perchè c'erano nella lista dei pacchetti che io non avevo mai usato).
@@ -13,7 +13,7 @@ Proviamo a usare questo file NOTE e vediamo se funziona ahaha
 
 - Ho eliminato la directory dell'ambiente virtuale, tanto non funziona da macOS a Debian...teniamo aggiornato il file dei requirements.txt e bona. In ogni caso comunque se manca un pacchetto è facile vederlo appena lanci lo script
 
-========= Pier 2 ===========
+========= Pier - hashtags  ===========
 Ho avuto un idea per gli hashtags:
 - vengono inseriti normalmente nell campo 'hashtags'
 - vengono anche inseriti nel plain text

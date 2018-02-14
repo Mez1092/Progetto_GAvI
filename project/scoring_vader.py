@@ -18,19 +18,19 @@ def calculate_score(sentiment_scores):
     neg = sentiment_scores['neg']
     neu = sentiment_scores['neu']
     score = pos - neg
-    if neu > 0.65:
+    if pos > (neu+0.35) or neg > (neu+0.35):
         if pos > neg:
             score += neu
-        elif pos < neg:
+        elif neg > pos:
             score -= neu
-    elif neu > 0.8:
-        score =- 0.1*score
+    if neu > 0.75:
+        score =- 0.15*score
     return score
 
 if __name__ == '__main__':
     tweets = ET.parse(args.input_file).getroot()
     tweets_score = {}
-    for tweet in tqdm(tweets[-800:]):
+    for tweet in tqdm(tweets):
         tweet_text = tweet.find('PLAIN_TEXT').text
         tweet_id = tweet.attrib['ID']
         if tweet_text == None:
