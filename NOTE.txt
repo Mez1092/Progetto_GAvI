@@ -12,3 +12,16 @@ Prova a ricrearti l'ambiente virtuale e installare i pacchetti con:
 Proviamo a usare questo file NOTE e vediamo se funziona ahaha
 
 - Ho eliminato la directory dell'ambiente virtuale, tanto non funziona da macOS a Debian...teniamo aggiornato il file dei requirements.txt e bona. In ogni caso comunque se manca un pacchetto è facile vederlo appena lanci lo script
+
+========= Pier 2 ===========
+Ho avuto un idea per gli hashtags:
+- vengono inseriti normalmente nell campo 'hashtags'
+- vengono anche inseriti nel plain text
+  - in questo caso quando possibile vengono splittati (BeyondCaravaggio -> Beyond Caravaggio)
+Esempio)
+TEXTTW : @NationalGallery Fantastic #BeyondCaravaggio lecture today from Sian Walters 🎨
+HASHTAGS : beyondcaravaggio
+PLAIN_TEXT : fantastic beyond caravaggio lecture today from sian walters
+
+Ho pensato di fare in questo modo così che se gli hashtags servono alla frase vengono mantenuti..proviamo e 
+vediamo come vanno le analisi che dici? 

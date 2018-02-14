@@ -1,16 +1,16 @@
 import re
 import emot
-import time
 import pandas as pd
 from xml.etree import ElementTree as ET
 from xml.dom import minidom
 from nltk.sentiment.util import HAPPY, SAD
 import argparse
+from tqdm import tqdm
 parser = argparse.ArgumentParser(description="Tokenize tweets text")
 parser.add_argument("input_file", type=str,
 					help="XML file input of tweets")
 parser.add_argument("-o", "--output", dest="output_file", type=str,
-					default='data/xml/texttw_tokenized.xml',
+					default='data/xml/tweets_tokenized.xml',
 					help="XML file output of token tweets")
 parser.add_argument("--csv", dest="csv", action="store_true", help="If you want csv also")
 args = parser.parse_args()
@@ -97,7 +97,7 @@ def html2unicode(text):
 
 def find_emojis(text):
 	""" Find and remove emojis in text.
-		Return emojis founded.
+		Return emojis founded and text without emojis.
 	"""
 	emojis = []
 	for emoji in emot.emoji(text):
@@ -106,11 +106,16 @@ def find_emojis(text):
 
 	return text, emojis
 
+def split_hashtags(hashtag):
+	matches = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', hashtag)
+	return [m.group(0) for m in matches]
+
 if __name__ == '__main__':
 	tweets = ET.parse(args.input_file).getroot()
 	
 	tweets_text = []
-	for tweet in tweets:
+	print("Tokenizing tweets...")
+	for tweet in tqdm(tweets):
 
 		tweet_text = tweet.find('TEXTTW').text
 		tweet_id = tweet.attrib['ID']
@@ -126,24 +131,27 @@ if __name__ == '__main__':
 		text_token['ORIGINAL_TEXT'] = tweet_text
 		text_token['LANG'] = tweet_lang
 		
-		tweet_text = html2unicode(tweet_text).lower()
+		tweet_text = html2unicode(tweet_text)
 		
 		tweet_text, emojis = find_emojis(tweet_text)
 
 		tokens = word_re.findall(tweet_text)
 		for token in tokens:
 			if token.startswith('#'):					# is hashtag
-				hashtags.append(token.replace('#', ''))
+				hashtags.append(token.replace('#', '').lower())
+				hasthtag_text = split_hashtags(token.replace('#', ''))	# split camel case
+				for hashtag in hasthtag_text:
+					plain_text.append(hashtag.lower())
 			elif token.startswith('@'):					# is screen name
 				pass
 			elif token.startswith('http'): 				# is a link
 				pass
-			elif token.startswith('rt'):				# is re-tweet
+			elif token.startswith('RT'):				# is re-tweet
 				pass
 			elif (token in HAPPY) or (token in SAD):	# is emoticon
 				emoticons.append(token)
 			else:
-				plain_text.append(token)				# is plain text
+				plain_text.append(token.lower())				# is plain text
 
 		text_token['HASHTAGS'] = ' '.join(hashtags)
 		text_token['EMOTICONS'] = ' '.join(emoticons)
@@ -168,4 +176,5 @@ if __name__ == '__main__':
 	if args.csv:
 		print("Write token in csv file...")
 		df = pd.DataFrame(tweets_text)
+		df.set_index('ID', inplace=True)
 		df.to_csv(args.output_file.replace('xml', 'csv'))
