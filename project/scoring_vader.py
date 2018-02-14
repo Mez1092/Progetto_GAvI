@@ -18,7 +18,7 @@ def calculate_score(sentiment_scores):
     neg = sentiment_scores['neg']
     neu = sentiment_scores['neu']
     score = pos - neg
-    if pos > (neu+0.35) or neg > (neu+0.35):
+    if neu < 0.3:
         if pos > neg:
             score += neu
         elif neg > pos:
@@ -31,8 +31,11 @@ if __name__ == '__main__':
     tweets = ET.parse(args.input_file).getroot()
     tweets_score = {}
     for tweet in tqdm(tweets):
+        tweet_emoticons = tweet.find('EMOTICONS').text
+        tweet_emojis = tweet.find('EMOJIS').text
         tweet_text = tweet.find('PLAIN_TEXT').text
         tweet_id = tweet.attrib['ID']
+
         if tweet_text == None:
             score = 0
         else:
