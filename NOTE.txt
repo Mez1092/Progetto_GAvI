@@ -24,4 +24,7 @@ HASHTAGS : beyondcaravaggio
 PLAIN_TEXT : fantastic beyond caravaggio lecture today from sian walters
 
 Ho pensato di fare in questo modo così che se gli hashtags servono alla frase vengono mantenuti..proviamo e 
-vediamo come vanno le analisi che dici? 
+vediamo come vanno le analisi che dici?
+
+========= Marco - hashtags =========
+penso possa essere una buona soluzione, se non vengono splittati immagino che il lexicon non gli dia valore quindi direi ottimo!
