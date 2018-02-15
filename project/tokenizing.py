@@ -39,7 +39,7 @@ regex_strings = (
     r"""RT"""
     ,
     # URLs:
-    r"""(?:http[s]?[\w\W]+)"""
+    r"""(?:http[s]?://t.co/[a-zA-Z0-9]+)"""
     ,
     # Twitter username:
 	r"""(?:@[\w_]+:?)"""
