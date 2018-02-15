@@ -2,8 +2,9 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer as SA
 from nltk.sentiment.vader import normalize
 from nltk.corpus import stopwords
 import argparse
-import time
 import pandas as pd
+import matplotlib
+matplotlib.use('qt5agg')
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 from xml.etree import ElementTree as ET
@@ -13,6 +14,7 @@ parser.add_argument("input_file", type=str,
 parser.add_argument('-o', '--output', type=str, dest='output_file',
                     default='data/csv/tweets_score_vader.csv')
 args = parser.parse_args()
+
 
 def calculate_scores(scores):
     pos = scores['pos']
@@ -30,7 +32,6 @@ def calculate_scores(scores):
         else:
             score += neu
     return score
-
 
 
 if __name__ == '__main__':
@@ -63,7 +64,7 @@ if __name__ == '__main__':
         tweet_id = tweet.attrib['ID']
         tweet_text = tweet.find('PLAIN_TEXT').text
 
-        if tweet_text == None:
+        if tweet_text is None:
             continue
         else:
             words = [w for w in tweet_text.split() if w not in stopwords.words('english')]
@@ -84,10 +85,14 @@ if __name__ == '__main__':
         n = normalize(v, alpha=1)
         tweets_scores[k] = n
 
-
     df = pd.DataFrame.from_dict(tweets_scores, orient='index')
     df.columns = ['SCORE']
     df.index.name = 'ID'
     df['SCORE'].plot('hist')
+
+    ax = plt.gca()
+    ax.set_title("Distribuzione punteggio dei tweet (vader)")
+    ax.set_xlabel("Score")
     plt.show()
+
     df.to_csv(args.output_file)

@@ -2,9 +2,9 @@ from nltk.corpus import sentiwordnet as swn
 from nltk.corpus import wordnet as wn
 from nltk.corpus import stopwords
 import argparse
-import numpy as np
+import matplotlib
+matplotlib.use('qt5agg')
 from matplotlib import pyplot as plt
-import time
 import pandas as pd
 from nltk.sentiment.vader import normalize
 from tqdm import tqdm
@@ -16,6 +16,7 @@ parser.add_argument('-o', '--output', type=str, dest='output_file',
                     default='data/csv/tweets_score_swn.csv')
 parser.add_argument('--disambiguate', action='store_true')
 args = parser.parse_args()
+
 
 def select_synset(words):
     """ Disambiguate words and return synset selected for each words.
@@ -49,6 +50,7 @@ def select_synset(words):
             synsets.append(word_sense)
     return synsets
 
+
 if __name__ == '__main__':
 
     tweets = ET.parse(args.input_file).getroot()
@@ -57,7 +59,7 @@ if __name__ == '__main__':
     print("Calculate score for tweets...")
     for tweet in tqdm(tweets):
         # initial score for tweet
-        tweet_score = 0
+        tweet_score = 0.0
 
         # count number of emoticons
         tweet_emoticons = tweet.find('EMOTICONS').text
@@ -78,19 +80,20 @@ if __name__ == '__main__':
         tweet_id = tweet.attrib['ID']
 
         if tweet_plain_text is None:
+            tweets_scores[tweet_id] = tweet_score
             continue
 
         tweets_words = [t for t in tweet_plain_text.split() if t not in stopwords.words('english')]
         synsets = select_synset(tweets_words)
+        num_words = len(synsets)
 
-        pos_score = 0
-        neg_score = 0
+        if num_words == 0:
+            tweets_scores[tweet_id] = tweet_score
+            continue
+
         for syn in synsets:
-            pos_score += swn.senti_synset(syn.name()).pos_score()
-            neg_score -= swn.senti_synset(syn.name()).neg_score()
-
-        tweet_score += neg_score
-        tweet_score += pos_score
+            tweet_score += swn.senti_synset(syn.name()).pos_score()
+            tweet_score -= swn.senti_synset(syn.name()).neg_score()
 
         # consider emojis and emoticons
         if tweet_score < 0:
@@ -100,7 +103,7 @@ if __name__ == '__main__':
             tweet_score += (num_emojis**2)/4
             tweet_score += (num_emoticons**2)/4
 
-        tweets_scores[tweet_id]=tweet_score
+        tweets_scores[tweet_id] = tweet_score
 
     # normalize [-1, 1]
     for k, v in tweets_scores.items():
@@ -111,5 +114,15 @@ if __name__ == '__main__':
     df.columns = ['SCORE']
     df.index.name = 'ID'
     df['SCORE'].plot('hist')
+
+    ax = plt.gca()
+    ax.set_xlabel("Score")
+    title = "Distribuzione punteggio dei tweet (sentiwordnet "
+    if args.disambiguate:
+        title = title + " con disambiguazione)"
+    else:
+        title = title + ")"
+    ax.set_title(title)
     plt.show()
+
     df.to_csv(args.output_file)
