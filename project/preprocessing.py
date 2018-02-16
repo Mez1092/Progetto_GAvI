@@ -5,23 +5,16 @@ import argparse
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 parser = argparse.ArgumentParser(description="Convert .txt file of tweets in a .xml file.")
-# input argument
-parser.add_argument("input_file", type=str,
-                    help="Input text file of tweets")
-# output argument
-parser.add_argument("-o", "--output", dest="output_file", type=str,
-                    default='data/xml/mostre.xml',
-                    help="Output xml and csv file of tweets")
-# do you want .csv?
-parser.add_argument("--csv", dest="csv", action="store_true", help="If you want .csv also")
+parser.add_argument("input_file", type=argparse.FileType("r"), help="Input text file of tweets")
+parser.add_argument("output_file", type=argparse.FileType("w+"), nargs='?', default='data/xml/mostre.xml', help="Output xml file of tweets")
+parser.add_argument("--csv", action="store_true", help="If you want .csv also")
 args = parser.parse_args()
 
 
 if __name__ == '__main__':
 
     # Read all data
-    with open(args.input_file, "r") as file:
-        data = file.read()
+    data = args.input_file.read()
 
     # Get list of single tweet
     start = 'TextTW : '
@@ -41,7 +34,7 @@ if __name__ == '__main__':
         if 'Tweetid : ' not in labels:		    # tweet bad formatted
             continue
         for i in range(len(labels)):
-            if i >= 0 and i < (len(labels)-1):
+            if 0 <= i < (len(labels) - 1):
                 split_word = labels[i+1]
                 key = labels[i].replace(' : ', '').replace('-', '_').upper()
                 content = re.sub('(\s)+$', '', d.split(split_word)[0].replace('\n', ' '))
@@ -69,12 +62,11 @@ if __name__ == '__main__':
             attr.text = v
     print("Write tweets on xml file...")
     xml = minidom.parseString(ET.tostring(root)).toprettyxml()
-    with open(args.output_file, "w+") as file:
-        file.write(xml)
+    args.output_file.write(xml)
 
     if args.csv:
         # Write tweets to .csv
         df = pd.DataFrame(tweets, dtype=None)
         df.set_index('TWEETID', inplace=True)
         print("Write tweets on csv file")
-        df.to_csv(args.output_file.replace('xml', 'csv'))
+        df.to_csv(args.output_file.name.replace('xml', 'csv'))

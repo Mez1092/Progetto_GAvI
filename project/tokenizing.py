@@ -7,13 +7,12 @@ from xml.dom import minidom
 from nltk.sentiment.util import HAPPY, SAD
 import argparse
 from tqdm import tqdm
-parser = argparse.ArgumentParser(description="Tokenize tweets text")
-parser.add_argument("input_file", type=str,
-                    help="XML file input of tweets")
-parser.add_argument("-o", "--output", dest="output_file", type=str,
-                    default='data/xml/tweets_tokenized.xml',
+parser = argparse.ArgumentParser(description="Tokenize tweets text and save structure in a xml file")
+parser.add_argument("input_file", type=argparse.FileType("r"), help="XML file input of tweets")
+parser.add_argument("output_file", type=argparse.FileType("w+"), nargs='?', default='data/xml/tweets_tokenized.xml',
                     help="XML file output of token tweets")
-parser.add_argument("--csv", dest="csv", action="store_true", help="If you want csv also")
+parser.add_argument("--csv", action="store_true", help="If you want csv also")
+parser.add_argument("--emoticons", action="store_true", help="If you want emoticons in plain text")
 args = parser.parse_args()
 
 emoticon_string = r"""
@@ -113,7 +112,7 @@ def split_hashtags(hashtag):
 
 
 if __name__ == '__main__':
-    tweets = ET.parse(args.input_file).getroot()
+    tweets = ET.parse(args.input_file.name).getroot()
 
     tweets_text = []
     print("Tokenizing tweets...")
@@ -152,6 +151,8 @@ if __name__ == '__main__':
                 pass
             elif (token in HAPPY) or (token in SAD):					# is emoticon
                 emoticons.append(token)
+                if args.emoticons:
+                    plain_text.append(token)
             else:
                 text = re.sub('[\_\-]', ' ', token).lower()				# adjust plain text
                 plain_text.append(text)									# is plain text
@@ -173,11 +174,10 @@ if __name__ == '__main__':
             attrib = ET.SubElement(item, k)
             attrib.text = v
     xml = minidom.parseString(ET.tostring(root)).toprettyxml()
-    with open(args.output_file, "w+") as file:
-        file.write(xml)
+    args.output_file.write(xml)
 
     if args.csv:
         print("Write token in csv file...")
         df = pd.DataFrame(tweets_text)
         df.set_index('ID', inplace=True)
-        df.to_csv(args.output_file.replace('xml', 'csv'))
+        df.to_csv(args.output_file.name.replace('xml', 'csv'))
