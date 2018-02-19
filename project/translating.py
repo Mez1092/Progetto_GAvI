@@ -32,5 +32,6 @@ if __name__ == '__main__':
             attr.text = translated_text.text
     
     xml = parseString(ET.tostring(tweets)).toprettyxml()
+
     with open(args.output_file, "w+") as f:
         f.write(xml)
