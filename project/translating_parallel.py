@@ -8,6 +8,7 @@ from tqdm import tqdm
 from xml.dom.minidom import parseString
 from joblib import Parallel, delayed
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument("input_file", type=argparse.FileType("r"), help="XML file containing tokenized tweets")
 parser.add_argument("output_file", type=argparse.FileType("w+"), nargs='?', default='data/xml/tweets_translated.xml',
@@ -41,16 +42,146 @@ def html2unicode(text):
 
     return text
 
+#############   TRANSLATING    #############
+#
+#
+#
+# if __name__ == '__main__':
+#
+#
+#     # tweets = ET.parse(args.input_file.name).getroot()
+#     tree = ET.parse(args.input_file.name)
+#     tweets = tree.getroot()
+#
+#     root = ET.Element('TRANSLATED_TOKENIZED_TWEETS')
+#
+#     print("Analizing and translate tweets...")
+#     try:
+#         for tweet in tqdm(tweets):
+#             # new xml file
+#             item = ET.SubElement(root, 'TWEET')
+#             item.set('ID', tweet.attrib['ID'])
+#             for t in tweet:
+#                 attrib = ET.SubElement(item, t.tag)
+#                 attrib.text = tweet.find(t.tag).text
+#
+#             tweet_lang = tweet.find('LANG').text
+#             tweet_text = tweet.find('PLAIN_TEXT').text
+#
+#             # default no translate
+#             if tweet_text is not None:
+#                 translated_text = tweet_text
+#             else: translated_text = ""
+#
+#             # translate...
+#             if tweet_text is not None and tweet_lang != 'en' and tweet_lang != 'und':
+#                 try:
+#                     translated_text = Translator().translate(tweet_text, src=tweet_lang, dest='en').text
+#                 except ValueError:
+#                     pass
+#                 translated_text = html2unicode(translated_text)
+#
+#
+#
+#             attrib = ET.SubElement(item, 'Translated_text')
+#             attrib.text = translated_text
+#
+#             # stemming...
+#             stemmer = WordNetLemmatizer()
+#             stemmed_text = [stemmer.lemmatize(word) for word in translated_text.split()]
+#
+#             attrib = ET.SubElement(item, 'Stemmed_text')
+#             attrib.text = ' '.join(stemmed_text)
+#     except:
+#         print("Translation not complete....")
+#         xml = parseString(ET.tostring(root)).toprettyxml()
+#         args.output_file.write(xml)
+#
+#     xml = parseString(ET.tostring(root)).toprettyxml()
+#     args.output_file.write(xml)
+#     # tree.write(args.input_file.name)
+
+
+#############   TRANSLATING PARALLEL   #############
+
+#
+#
+# def Translate(tweet):
+#     try:
+#         for tweet in tqdm(tweets):
+#             # new xml file
+#             item = ET.SubElement(root, 'TWEET')
+#             item.set('ID', tweet.attrib['ID'])
+#             for t in tweet:
+#                 attrib = ET.SubElement(item, t.tag)
+#                 attrib.text = tweet.find(t.tag).text
+#
+#             tweet_lang = tweet.find('LANG').text
+#             tweet_text = tweet.find('PLAIN_TEXT').text
+#
+#             # default no translate
+#             if tweet_text is not None:
+#                 translated_text = tweet_text
+#             else: translated_text = ""
+#
+#             # translate...
+#             if tweet_text is not None and tweet_lang != 'en' and tweet_lang != 'und':
+#                 try:
+#                     translated_text = Translator().translate(tweet_text, src=tweet_lang, dest='en').text
+#                 except ValueError:
+#                     pass
+#                 translated_text = html2unicode(translated_text)
+#
+#
+#
+#             attrib = ET.SubElement(item, 'Translated_text')
+#             attrib.text = translated_text
+#
+#             # stemming...
+#             stemmer = WordNetLemmatizer()
+#             stemmed_text = [stemmer.lemmatize(word) for word in translated_text.split()]
+#
+#             attrib = ET.SubElement(item, 'Stemmed_text')
+#             attrib.text = ' '.join(stemmed_text)
+#     except:
+#         print("Translation not complete....")
+#         xml = parseString(ET.tostring(root)).toprettyxml()
+#         args.output_file.write(xml)
+#
+#
+#
+# if __name__ == '__main__':
+#
+#
+#     # tweets = ET.parse(args.input_file.name).getroot()
+#     tree = ET.parse(args.input_file.name)
+#     tweets = tree.getroot()
+#
+#     root = ET.Element('TRANSLATED_TOKENIZED_TWEETS')
+#
+#     print("Analizing and translate tweets...")
+#
+#     results = Parallel(n_jobs=8)(delayed(Translate)(tweet) for tweet in tweets)
+#
+#     tree.write(args.input_file.name)
+
+
+
+#############   TRANSLATING PARALLEL 2.0   #############
+
+#      per poter parallelizzare cìè bisogno di andare a compilare i campi di un xml e non di ricrearne uno nuovo
+
 
 def Translate(tweet):
     try:
-        for tweet in tqdm(tweets):
             # new xml file
-            item = ET.SubElement(root, 'TWEET')
-            item.set('ID', tweet.attrib['ID'])
-            for t in tweet:
-                attrib = ET.SubElement(item, t.tag)
-                attrib.text = tweet.find(t.tag).text
+            # item = ET.SubElement(root, 'TWEET')
+            # item.set('ID', tweet.attrib['ID'])
+            #
+            # for t in tweet:
+            #     attrib = ET.SubElement(item, t.tag)
+            #
+            #     attrib.text = tweet.find(t.tag).text
 
             tweet_lang = tweet.find('LANG').text
             tweet_text = tweet.find('PLAIN_TEXT').text
@@ -68,21 +199,24 @@ def Translate(tweet):
                     pass
                 translated_text = html2unicode(translated_text)
 
-
-
-            attrib = ET.SubElement(item, 'Translated_text')
+            attrib = ET.SubElement(item, 'TRANSLATED_TEXT')
             attrib.text = translated_text
 
             # stemming...
             stemmer = WordNetLemmatizer()
             stemmed_text = [stemmer.lemmatize(word) for word in translated_text.split()]
 
-            attrib = ET.SubElement(item, 'Stemmed_text')
+            attrib = ET.SubElement(item, 'STEMMED_TEXT')
             attrib.text = ' '.join(stemmed_text)
+
+            xml = parseString(ET.tostring(root)).toprettyxml()
+            print(xml)
+
     except:
         print("Translation not complete....")
         xml = parseString(ET.tostring(root)).toprettyxml()
         args.output_file.write(xml)
+
 
 
 
@@ -92,14 +226,24 @@ if __name__ == '__main__':
     # tweets = ET.parse(args.input_file.name).getroot()
     tree = ET.parse(args.input_file.name)
     tweets = tree.getroot()
+    print(tree)
 
     root = ET.Element('TRANSLATED_TOKENIZED_TWEETS')
 
     print("Analizing and translate tweets...")
 
-    results = Parallel(n_jobs=8)(delayed(Translate)(tweet) for tweet in tweets)
+    # results = Parallel(n_jobs=8)(delayed(Translate)(tweet) for tweet in tweets)
 
-    tree.write(args.input_file.name)
+    Parallel(n_jobs=3)(delayed(Translate)(tweet) for tweet in tweets)
+
+    xml = parseString(ET.tostring(root)).toprettyxml()
+    args.output_file.write(xml)
+
+
+    # tree.write(args.input_file.name)
+
+
+
 
 
 
